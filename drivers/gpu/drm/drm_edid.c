@@ -66,6 +66,8 @@
 #define EDID_QUIRK_FIRST_DETAILED_PREFERRED	(1 << 5)
 /* use +hsync +vsync for detailed mode */
 #define EDID_QUIRK_DETAILED_SYNC_PP		(1 << 6)
+/* Force reduced-blanking timings for detailed modes */
+#define EDID_QUIRK_FORCE_REDUCED_BLANKING	(1 << 7)
 
 struct detailed_mode_closure {
 	struct drm_connector *connector;
@@ -120,6 +122,12 @@ static struct edid_quirk {
 	/* Samsung SyncMaster 22[5-6]BW */
 	{ "SAM", 596, EDID_QUIRK_PREFER_LARGE_60 },
 	{ "SAM", 638, EDID_QUIRK_PREFER_LARGE_60 },
+
+	/* ViewSonic VA2026w */
+	{ "VSC", 5020, EDID_QUIRK_FORCE_REDUCED_BLANKING },
+
+	/* Medion MD 30217 PG */
+	{ "MED", 0x7b8, EDID_QUIRK_PREFER_LARGE_75 },
 };
 
 /*** DDC fetch and block validation ***/
@@ -852,6 +860,15 @@ static struct drm_display_mode *drm_mode_detailed(struct drm_device *dev,
 				"Wrong Hsync/Vsync pulse width\n");
 		return NULL;
 	}
+
+	if (quirks & EDID_QUIRK_FORCE_REDUCED_BLANKING) {
+		mode = drm_cvt_mode(dev, hactive, vactive, 60, true, false, false);
+		if (!mode)
+			return NULL;
+
+		goto set_size;
+	}
+
 	mode = drm_mode_create(dev);
 	if (!mode)
 		return NULL;
@@ -892,6 +909,7 @@ static struct drm_display_mode *drm_mode_detailed(struct drm_device *dev,
 	mode->flags |= (pt->misc & DRM_EDID_PT_VSYNC_POSITIVE) ?
 		DRM_MODE_FLAG_PVSYNC : DRM_MODE_FLAG_NVSYNC;
 
+set_size:
 	mode->width_mm = pt->width_mm_lo | (pt->width_height_mm_hi & 0xf0) << 4;
 	mode->height_mm = pt->height_mm_lo | (pt->width_height_mm_hi & 0xf) << 8;
 
@@ -904,6 +922,9 @@ static struct drm_display_mode *drm_mode_detailed(struct drm_device *dev,
 		mode->width_mm = edid->width_cm * 10;
 		mode->height_mm = edid->height_cm * 10;
 	}
+
+	mode->type = DRM_MODE_TYPE_DRIVER;
+	drm_mode_set_name(mode);
 
 	return mode;
 }
