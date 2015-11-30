@@ -2,6 +2,15 @@
 # Automatically generated file; DO NOT EDIT.
 # Linux/arm 3.4.0 Kernel Configuration
 #
+
+#***
+# build unified device tree
+#***
+CONFIG_MACH_M8_DTB=y
+CONFIG_MACH_M8_WHL_DTB=y
+CONFIG_MACH_M8_WL_DTB=y
+CONFIG_MACH_M8_DUG_DTB=y
+
 CONFIG_ARM=y
 CONFIG_ARM_HAS_SG_CHAIN=y
 CONFIG_SYS_SUPPORTS_APM_EMULATION=y
