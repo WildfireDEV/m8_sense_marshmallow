@@ -8,7 +8,7 @@ if [ ! -d /kernel_output_flar2 ]; then
     cd ../kernel_output_flar2
     rm -rf *
     cd ~
-    cd m8m
+    cd m8_m
     cp arch/arm/boot/zImage ../kernel_output_flar2/zImage
     find . -name "*.ko" -exec cp {} ../kernel_output_flar2 \;
 else
